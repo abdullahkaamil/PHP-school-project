@@ -141,9 +141,9 @@ function sil()
 {
     $c = mysqli_connect('localhost', 'root', '', 'okul'); // VT'ye baglan
     $sql = "DELETE FROM ogrenci WHERE ono=" . $_GET['no'] . ";";
-    $sonuc = mysqli_query($c, $sql); // SQL komutunu calistir
-    if (!$sonuc) // komutu calistirirken hata olustumu?
-    echo "SQL Hatasi:" . mysqli_error($c);
+    $result = mysqli_query($c, $sql); // SQL komutunu calistir
+    if (!$result) // komutu calistirirken hata olustumu?
+    echo "SQL error:" . mysqli_error($c);
     mysqli_close($c); // VT baglantisini kapat
     //header("location:index.php"); // browser'in ogrenci.php sayfasini yuklemesini sagla
 }
@@ -158,8 +158,8 @@ function checking()
         $soyad = $_GET['soyad'];
 
         $sql = "SELECT* FROM ogrenci where ono = '$no' ";
-        $sonuc = mysqli_query($c, $sql);
-        if (mysqli_num_rows($sonuc) > 0) {
+        $result = mysqli_query($c, $sql);
+        if (mysqli_num_rows($result) > 0) {
             echo 'Username already Exists!!';
         } else {
             ekle();
@@ -169,12 +169,9 @@ function checking()
     //list after adding the student
 function listele()
 {
-    $baglanti = mysqli_connect('localhost', 'root', '', 'okul');
-    if (!$baglanti)
-        echo "Baglanti Hatasi:" . mysqli_error($baglanti);
-    $kayitKumesi = mysqli_query($baglanti, "SELECT * FROM ogrenci;");
-    if (!$kayitKumesi)
-        echo "SQL Hatasi:" . mysqli_error($baglanti);
+    $c = mysqli_connect('localhost', 'root', '', 'okul');
+     $sql = "SELECT * FROM ogrenci ";
+    
     echo "<br>
     <div class='table-responsive col-md-4 align-middle'>
         <h2>Ogrenci listesi</h2>
@@ -197,73 +194,48 @@ function listele()
         <br>
         ";
         //sorting the variables 
-    $orderBy = array('no', 'adi', 'soyadi');//Start
+  /*  $orderBy = array('no', 'adi', 'soyadi');//Start
     $order = 'type';
     if (isset($_GET['orderBy']) && in_array($_GET['orderBy'], $orderBy)) {
         $order = $_GET['orderBy'];
         $sql = "SELECT * FROM ogrenci ORDER BY " . $order;
     }//end 
-    while ($kayit = mysqli_fetch_array($kayitKumesi)) {
+*/
+    $result_per_page = 6; // number of name you want to show in list
+    $result1 = mysqli_query($c, $sql);
+    $number_of_result = mysqli_num_rows($result1); // number of result
+   
+    $number_of_pages = ceil($number_of_result / $result_per_page);
+//which page the visitor is 
+    if (!isset($_GET['page'])) {
+        $page = 1;
+    } else {
+        $page = $_GET['page'];
+    }
+
+    $this_page_first_result = ($page - 1) * $result_per_page; //determine limit starting number for the result
+    $sql = "SELECT * FROM ogrenci  LIMIT " . $this_page_first_result . ',' . $result_per_page;
+    $result1 = mysqli_query($c, $sql);
+
+    while ($row = mysqli_fetch_array($result1)) {
         echo "
         <tr>
-            <td>" . $kayit[0] . "</td>
-            <td>" . $kayit[1] . "</td>
-            <td>" . $kayit[2] . "</td>
-            <td><a href='?is=sil&no=" . $kayit[0] . "'>Sil</a></td>
-            <td><a href='?is=degistir&no={$kayit[0]}&ad={$kayit[1]}&soyad={$kayit[2]}'>Degistir</a></td>
+            <td>" . $row[0] . "</td>
+            <td>" . $row[1] . "</td>
+            <td>" . $row[2] . "</td>
+            <td><a href='?is=sil&no=" . $row[0] . "'>Sil</a></td>
+            <td><a href='?is=degistir&no={$row[0]}&ad={$row[1]}&soyad={$row[2]}'>Degistir</a></td>
         </tr>";
     }
-//pagenation 
-    if (isset($_GET['pageno'])) {
-        $pageno = $_GET['pageno'];
-    } else {
-        $pageno = 1;
-    }
-    $no_of_records_per_page = 5;
-    $offset = ($pageno - 1) * $no_of_records_per_page;
-
-    $c = mysqli_connect('localhost', 'root', '', 'okul');
-
-    $total_pages_sql = "SELECT COUNT(*) FROM ogrenci";
-    $result = mysqli_query($c, $total_pages_sql);
-    $total_rows = mysqli_fetch_array($result)[0];
-    $total_pages = ceil($total_rows / $no_of_records_per_page);
-
-    $sql = "SELECT * FROM ogrenci LIMIT $offset, $no_of_records_per_page";
-    $res_data = mysqli_query($c, $sql);
-    while ($row = mysqli_fetch_array($res_data)) {
-            //here goes the data
-    }
-    ?> 
-   
-        </table>
-        <div>
-<ul class='pagination'>
-<li><a href='?pageno=1'>First</a></li>pageno = <?php echo $pageno; ?>
-        <li class='<?php if ($pageno <= 1) {
-                        echo 'disabled';
-                    } ?>'>
-            <a href='<?php if ($pageno <= 1) {
-                        echo '#';
-                    } else {
-                        echo '?pageno=' . $pageno;
-                    } ?>''>Prev</a>
-        </li>
-        <li class='<?php if ($pageno >= $total_pages) {
-                        echo 'disabled';
-                    } ?>'>
-            <a href='<?php if ($pageno >= $total_pages) {
-                        echo '#';
-                    } else {
-                        echo '?pageno=' . $pageno;
-                    } ?>>Next</a>
-        </li>
-        <li><a href='?pageno=<?php echo $total_pages; ?>'>Last</a></li>
-    </ul>
-</div>
+    ?>
+        </table> 
+     <?php  //display the links to the page
+    for ($page = 1; $page <= $number_of_pages; $page++) {
+        echo '<a href="page.php?page=' . $page . '">' . $page . '</a>';
+    } ?>  <br> 
     <a href='?is=yeni' class='btn btn-primary btn-lg active' role='button' aria-pressed='true'>Yeni ogrenci</a></div>
     <?php
-    mysqli_close($baglanti);
+    mysqli_close($c);
 }
 ?>
     <!-- Optional JavaScript -->
