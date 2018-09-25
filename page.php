@@ -13,7 +13,7 @@ if (!isset($_GET['is']))
     $_GET['is'] = '';
 switch ($_GET['is']) {
     case 'detele':
-    detele();
+        detele();
         listed();
         break;
     case 'newStd':
@@ -44,27 +44,28 @@ function update()
     mysqli_close($c);
 }
  //checking if the student no is exist or not 
- function checking()
- {
-     $c = mysqli_connect('localhost', 'root', '', 'okul');
-     if (isset($_GET['no']) && isset($_GET['ad']) && isset($_POST['soyad']));
-     {
-         $no = $_GET['no'];
-         $ad = $_GET['ad'];
-         $soyad = $_GET['soyad'];
- 
-         $sql = "SELECT* FROM ogrenci where ono = '$no' ";
-         $result = mysqli_query($c, $sql);
-         if (mysqli_num_rows($result) > 0) {
-             echo 'Username already Exists!!';
-         } else {
-             add();
-         }
-     }
- }
+function checking()
+{
+    $c = mysqli_connect('localhost', 'root', '', 'okul');
+    if (isset($_GET['no']) && isset($_GET['ad']) && isset($_POST['soyad']));
+    {
+        $no = $_GET['no'];
+        $ad = $_GET['ad'];
+        $soyad = $_GET['soyad'];
+
+        $sql = "SELECT* FROM ogrenci where ono = '$no' ";
+        $result = mysqli_query($c, $sql);
+        if (mysqli_num_rows($result) > 0) {
+            echo 'Username already Exists!!';
+        } else {
+            add();
+        }
+    }
+}
 
  //updating form
-function form (){?>
+function form()
+{ ?>
 <h4>Student update </h4>
 <div class='form-group col-md-8'>
 <form action=''>
@@ -90,6 +91,7 @@ function form (){?>
 </form>
 </div>
 <?php
+
 }
 //adding
 function add()
@@ -102,16 +104,16 @@ function add()
     mysqli_close($c);
 }
  //detele
- function detele()
- {
-     $c = mysqli_connect('localhost', 'root', '', 'okul'); // VT'ye baglan
-     $sql = "DELETE FROM ogrenci WHERE ono=" . $_GET['no'] . ";";
-     $result = mysqli_query($c, $sql); // SQL komutunu calistir
-     if (!$result) // komutu calistirirken hata olustumu?
-     echo "SQL error:" . mysqli_error($c);
-     mysqli_close($c); // VT baglantisini kapat
+function detele()
+{
+    $c = mysqli_connect('localhost', 'root', '', 'okul'); // VT'ye baglan
+    $sql = "DELETE FROM ogrenci WHERE ono=" . $_GET['no'] . ";";
+    $result = mysqli_query($c, $sql); // SQL komutunu calistir
+    if (!$result) // komutu calistirirken hata olustumu?
+    echo "SQL error:" . mysqli_error($c);
+    mysqli_close($c); // VT baglantisini kapat
      //header("location:index.php"); // browser'in ogrenci.php sayfasini yuklemesini sagla
- }
+}
 // 
 function newStd()
 {
@@ -168,64 +170,94 @@ function listed()
     $sql = "SELECT * FROM ogrenci ";
     $result = mysqli_query($c, $sql);
     $number_of_result = mysqli_num_rows($result);
-    echo "<br>
+
+// sorting the arrays 
+
+    if (isset($_GET['order'])) {
+        $order = $_GET['order'];
+    } else {
+        $order = 'ono';
+    }
+    if (isset($_GET['sort'])) {
+        $sort = $_GET['sort'];
+    } else {
+        $sort = 'ASC';
+    }
+    if (isset($_GET['sortso'])) {
+        $sort1 = $_GET['sortso'];
+    } else {
+        $sort1 = 'soyadi';
+    }
+  //  $resultset = $mysqli->query("SELECT * FROM ogrenci  ORDER by $order $sort $sort1");
+    $sql = "SELECT * FROM ogrenci order by $order $sort ";
+    $result = mysqli_query($c, $sql);
+    if ($result->num_rows > 0) {
+$sort == 'DESC' ? $sort ='ASC' : $sort ='DESC';
+while ($rows =$result->fetch_assoc()){
+                $ono = $rows['ono'];
+                $adi =$rows['adi'];
+                $soyadi = $rows['soyadi'];
+            }
+        }
+        echo "<br>
     <div class='table-responsive col-md-4 align-middle'>
         <h2>Student List</h2>
         <table class='table table-striped'>
         <thead>
         <tr>
             <th scope='col'>
-                   <a href='?orderBy=no'>No</a>
+                   <a href='?order=ono&&sort=$sort'>No</a>
+            </th>
+            <th scope='col'> 
+                    <a href='?order=adi&&sort=$sort'>Adi</a>
             </th>
             <th scope='col'>
-                    <a href='?orderBy=adi'>Adi</a>
+                    <a href='?order=soyadi&&sort=$sort'>Soyadi</a>
             </th>
-            <th scope='col'>
-                    <a href='?orderBy=soyadi'>Soyadi</a>
-            </th>
-            <td>Detele</td>
+           <td>Detele</td>
             <td>UpDate</td>
         </tr>
         </thead>
-        <br>
-        ";
-         //sorting the variables 
+        <br>";
+        /* //sorting the variables 
     $orderBy = array('no', 'adi', 'soyadi');//Start
     $order = 'type';
     if (isset($_GET['orderBy']) && in_array($_GET['orderBy'], $orderBy)) {
         $order = $_GET['orderBy'];
         $sql = "SELECT * FROM ogrenci ORDER BY " . $order;
-    }//end 
-    $number_of_pages = ceil($number_of_result / $result_per_page);
+    }//end */
+        $number_of_pages = ceil($number_of_result / $result_per_page);
 //which page the visitor is 
-    if (!isset($_GET['page'])) {
-        $page = 1;
-    } else {
-        $page = $_GET['page'];
-    }
-    $this_page_first_result = ($page - 1) * $result_per_page;
-    $sql = "SELECT * FROM ogrenci  LIMIT " . $this_page_first_result . ',' . $result_per_page;
-    $result = mysqli_query($c, $sql);
-
-    while ($row = mysqli_fetch_array($result)) {
-        echo "
+        if (!isset($_GET['page'])) {
+            $page = 1;
+        } else {
+            $page = $_GET['page'];
+        }
+        $this_page_first_result = ($page - 1) * $result_per_page;
+        $sql = "SELECT * FROM ogrenci  order by $order $sort  LIMIT " . $this_page_first_result . ',' . $result_per_page;
+        echo ("SELECT * FROM ogrenci  order by $order $sort  LIMIT " . $this_page_first_result . ',' . $result_per_page);
+        $result = mysqli_query($c, $sql);
+        while ($row = mysqli_fetch_array($result)) {
+            $ono = $row['ono'];
+            $adi =$row['adi'];
+            $soyadi = $row['soyadi'];
+            echo "
     <tr>
-        <td>" . $row[0] . "</td>
-        <td>" . $row[1] . "</td>
-        <td>" . $row[2] . "</td>
-        <td><a href='?is=detele&no=" . $row[0] . "'>Detele</a></td>
-        <td><a href='?is=degistir&no={$row[0]}&ad={$row[1]}&soyad={$row[2]}'>Update</a></td>
+        <td>" .$ono . "</td>
+        <td>" .$adi. "</td>
+        <td>" .$soyadi. "</td>
+        <td><a href='?is=detele&no=" . $ono . "'>Detele</a></td>
+        <td><a href='?is=degistir&no={$ono}&ad={$adi}&soyad={$soyadi}'>Update</a></td>
     </tr> <br>";
-    }
-
-    
-    ?>
- </table>
+        }
+        ?>
+    </table>
  <?php 
- for ($page = 1; $page <= $number_of_pages; $page++) {
-        echo '<a href="page.php?page=' . $page . '">' . $page . '</a>';
-  }  ?>
-    <a href='?is=newStd' class='btn btn-primary btn-lg active' role='button' aria-pressed='true'>NEW STUDENT</a></div>
+for ($page = 1; $page <= $number_of_pages; $page++) {
+    echo '<a href="page.php?page=' . $page . '">' . $page . '</a>';
+} ?>
+    <a href='?is=newStd' class='btn btn-primary btn-lg active' role='button' aria-pressed='true'>NEW STUDENT</a>
+</div>
     <?php
     mysqli_close($c);
 }
