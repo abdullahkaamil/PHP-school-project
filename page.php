@@ -4,10 +4,14 @@
  <title>MY first PHP project</title> </head>
  <body>
 <?php 
+
+function connect(){
+    return mysqli_connect('localhost', 'root', '', 'okul'); //sql connect
+
+}
+
 echo "
-<pre>";
-print_r($_GET);
-echo "</pre>";
+<pre>";print_r($_GET); echo "</pre>";
 //switching between fucntions
 if (!isset($_GET['is']))
     $_GET['is'] = '';
@@ -36,7 +40,7 @@ switch ($_GET['is']) {
 // update
 function update()
 {
-    $c = mysqli_connect('localhost', 'root', '', 'okul'); //sql connect
+    
     $sql = "UPDATE ogrenci SET adi='{$_GET['ad']}',soyadi='{$_GET['soyad']}' WHERE ono={$_GET['no']};"; //sql update query
     $result = mysqli_query($c, $sql);
     if (mysqli_affected_rows($c) == 0)
@@ -46,7 +50,8 @@ function update()
  //checking if the student no is exist or not 
 function checking()
 {
-    $c = mysqli_connect('localhost', 'root', '', 'okul');
+    $c = connect();
+  //  $c = mysqli_connect('localhost', 'root', '', 'okul');
     if (isset($_GET['no']) && isset($_GET['ad']) && isset($_POST['soyad']));
     {
         $no = $_GET['no'];
@@ -96,7 +101,8 @@ function form()
 //adding
 function add()
 {
-    $c = mysqli_connect('localhost', 'root', '', 'okul');
+    $c = connect();
+    //$c = mysqli_connect('localhost', 'root', '', 'okul');
     $sql = "INSERT INTO ogrenci(ono,adi,soyadi) VALUES(" . $_GET['no'] . ",'" . $_GET['ad'] . "','" . $_GET['soyad'] . "');";
     echo $sql . "<br>";
     $result = mysqli_query($c, $sql) or mysqli_error($c);
@@ -106,7 +112,9 @@ function add()
  //detele
 function detele()
 {
-    $c = mysqli_connect('localhost', 'root', '', 'okul'); // VT'ye baglan
+    $c = connect();
+
+    //$c = mysqli_connect('localhost', 'root', '', 'okul'); // VT'ye baglan
     $sql = "DELETE FROM ogrenci WHERE ono=" . $_GET['no'] . ";";
     $result = mysqli_query($c, $sql); // SQL komutunu calistir
     if (!$result) // komutu calistirirken hata olustumu?
@@ -165,7 +173,9 @@ function newStd()
 //student list
 function listed()
 {
-    $c = mysqli_connect('localhost', 'root', '', 'okul');
+    $c = connect();
+
+   // $c = mysqli_connect('localhost', 'root', '', 'okul');
     $result_per_page = 5;
     $sql = "SELECT * FROM ogrenci ";
     $result = mysqli_query($c, $sql);
@@ -189,17 +199,19 @@ function listed()
         $sort1 = 'soyadi';
     }
   //  $resultset = $mysqli->query("SELECT * FROM ogrenci  ORDER by $order $sort $sort1");
-    $sql = "SELECT * FROM ogrenci order by $order $sort ";
+  $c = connect();
+ 
+  // $sql = "SELECT * FROM ogrenci order by $order $sort ";
     $result = mysqli_query($c, $sql);
     if ($result->num_rows > 0) {
-$sort == 'DESC' ? $sort ='ASC' : $sort ='DESC';
-while ($rows =$result->fetch_assoc()){
-                $ono = $rows['ono'];
-                $adi =$rows['adi'];
-                $soyadi = $rows['soyadi'];
-            }
+        $sort == 'DESC' ? $sort = 'ASC' : $sort = 'DESC';
+        while ($rows = $result->fetch_assoc()) {
+            $ono = $rows['ono'];
+            $adi = $rows['adi'];
+            $soyadi = $rows['soyadi'];
         }
-        echo "<br>
+    }
+    echo "<br>
     <div class='table-responsive col-md-4 align-middle'>
         <h2>Student List</h2>
         <table class='table table-striped'>
@@ -226,31 +238,31 @@ while ($rows =$result->fetch_assoc()){
         $order = $_GET['orderBy'];
         $sql = "SELECT * FROM ogrenci ORDER BY " . $order;
     }//end */
-        $number_of_pages = ceil($number_of_result / $result_per_page);
+    $number_of_pages = ceil($number_of_result / $result_per_page);
 //which page the visitor is 
-        if (!isset($_GET['page'])) {
-            $page = 1;
-        } else {
-            $page = $_GET['page'];
-        }
-        $this_page_first_result = ($page - 1) * $result_per_page;
-        $sql = "SELECT * FROM ogrenci  order by $order $sort  LIMIT " . $this_page_first_result . ',' . $result_per_page;
-        echo ("SELECT * FROM ogrenci  order by $order $sort  LIMIT " . $this_page_first_result . ',' . $result_per_page);
-        $result = mysqli_query($c, $sql);
-        while ($row = mysqli_fetch_array($result)) {
-            $ono = $row['ono'];
-            $adi =$row['adi'];
-            $soyadi = $row['soyadi'];
-            echo "
+    if (!isset($_GET['page'])) {
+        $page = 1;
+    } else {
+        $page = $_GET['page'];
+    }
+    $this_page_first_result = ($page - 1) * $result_per_page;
+    $sql = "SELECT * FROM ogrenci  order by $order $sort  LIMIT " . $this_page_first_result . ',' . $result_per_page;
+  //  echo ("SELECT * FROM ogrenci  order by $order $sort  LIMIT " . $this_page_first_result . ',' . $result_per_page);
+    $result = mysqli_query($c, $sql);
+    while ($row = mysqli_fetch_array($result)) {
+        $ono = $row['ono'];
+        $adi = $row['adi'];
+        $soyadi = $row['soyadi'];
+        echo "
     <tr>
-        <td>" .$ono . "</td>
-        <td>" .$adi. "</td>
-        <td>" .$soyadi. "</td>
+        <td>" . $ono . "</td>
+        <td>" . $adi . "</td>
+        <td>" . $soyadi . "</td>
         <td><a href='?is=detele&no=" . $ono . "'>Detele</a></td>
         <td><a href='?is=degistir&no={$ono}&ad={$adi}&soyad={$soyadi}'>Update</a></td>
     </tr> <br>";
-        }
-        ?>
+    }
+    ?>
     </table>
  <?php 
 for ($page = 1; $page <= $number_of_pages; $page++) {
